@@ -1,9 +1,13 @@
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
-import { UtensilsCrossed, X } from "lucide-react";
+import { Package, X } from "lucide-react";
 
 function ProductForm({ onAdd, onCancel, initialData }) {
+  // useRef: Reference to the Product Name input
+  const productNameRef = useRef(null);
+
+  // React Hook Form
   const {
     register,
     handleSubmit,
@@ -18,7 +22,7 @@ function ProductForm({ onAdd, onCancel, initialData }) {
     },
   });
 
-  // Load existing food details when editing
+  // Populate the form when editing; clear it when adding a product
   useEffect(() => {
     reset(
       initialData
@@ -33,9 +37,22 @@ function ProductForm({ onAdd, onCancel, initialData }) {
             category: "",
             price: "",
             stock: "",
-          },
+          }
     );
+
+    // Focus the Product Name input when the form opens
+    productNameRef.current?.focus();
   }, [initialData, reset]);
+
+  // Register the name input with React Hook Form
+  const {
+    ref: nameRef,
+    ...nameField
+  } = register("name", {
+    required: "Product name is required",
+    validate: (value) =>
+      value.trim().length > 0 || "Enter a valid product name",
+  });
 
   // Submit the form
   function submit(data) {
@@ -51,23 +68,20 @@ function ProductForm({ onAdd, onCancel, initialData }) {
       onSubmit={handleSubmit(submit)}
       className="space-y-5 rounded-2xl bg-white p-5 shadow-sm sm:p-6"
     >
-      {/* Form Header */}
+      {/* Form heading */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#F0F8E9]">
-            <UtensilsCrossed
-              size={22}
-              className="text-[#1F2926]"
-            />
+            <Package size={22} className="text-[#1F2926]" />
           </div>
 
           <div>
             <h2 className="text-lg font-bold text-[#1F2926] sm:text-xl">
-              {initialData ? "Edit Food Item" : "Add New Food"}
+              {initialData ? "Edit Product" : "Add New Product"}
             </h2>
 
             <p className="mt-1 text-sm text-[#858C89]">
-              Enter the food details below.
+              Enter the product details below.
             </p>
           </div>
         </div>
@@ -82,23 +96,23 @@ function ProductForm({ onAdd, onCancel, initialData }) {
         </button>
       </div>
 
-      {/* Food Name */}
+      {/* Product Name */}
       <div>
         <label
-          htmlFor="food-name"
+          htmlFor="product-name"
           className="mb-2 block text-sm font-medium text-[#1F2926]"
         >
-          Food Name
+          Product Name
         </label>
 
         <input
-          id="food-name"
-          {...register("name", {
-            required: "Food name is required",
-            validate: (value) =>
-              value.trim().length > 0 || "Enter a valid food name",
-          })}
-          placeholder="e.g. Classic Burger"
+          id="product-name"
+          {...nameField}
+          ref={(element) => {
+            nameRef(element);
+            productNameRef.current = element;
+          }}
+          placeholder="e.g. Classic T-Shirt"
           className="w-full rounded-lg border border-gray-200 p-3 outline-none transition focus:border-[#8FE34D]"
         />
 
@@ -112,26 +126,26 @@ function ProductForm({ onAdd, onCancel, initialData }) {
       {/* Category */}
       <div>
         <label
-          htmlFor="food-category"
+          htmlFor="product-category"
           className="mb-2 block text-sm font-medium text-[#1F2926]"
         >
           Category
         </label>
 
         <select
-          id="food-category"
+          id="product-category"
           {...register("category", {
             required: "Please select a category",
           })}
           className="w-full rounded-lg border border-gray-200 bg-white p-3 outline-none transition focus:border-[#8FE34D]"
         >
           <option value="">Select a category</option>
-          <option value="Fast Food">Fast Food</option>
-          <option value="Italian">Italian</option>
-          <option value="Indian">Indian</option>
-          <option value="Sides">Sides</option>
-          <option value="Desserts">Desserts</option>
-          <option value="Beverages">Beverages</option>
+          <option value="Clothing">Clothing</option>
+          <option value="Accessories">Accessories</option>
+          <option value="Footwear">Footwear</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Home & Living">Home & Living</option>
+          <option value="Beauty">Beauty</option>
         </select>
 
         {errors.category && (
@@ -141,22 +155,22 @@ function ProductForm({ onAdd, onCancel, initialData }) {
         )}
       </div>
 
-      {/* Price and Quantity */}
+      {/* Price and Stock */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {/* Price */}
         <div>
           <label
-            htmlFor="food-price"
+            htmlFor="product-price"
             className="mb-2 block text-sm font-medium text-[#1F2926]"
           >
             Price (₹)
           </label>
 
           <input
-            id="food-price"
+            id="product-price"
             type="number"
             step="0.01"
-            placeholder="149"
+            placeholder="799"
             {...register("price", {
               required: "Price is required",
               valueAsNumber: true,
@@ -177,30 +191,30 @@ function ProductForm({ onAdd, onCancel, initialData }) {
           )}
         </div>
 
-        {/* Quantity */}
+        {/* Stock */}
         <div>
           <label
-            htmlFor="food-stock"
+            htmlFor="product-stock"
             className="mb-2 block text-sm font-medium text-[#1F2926]"
           >
-            Available Quantity
+            Available Stock
           </label>
 
           <input
-            id="food-stock"
+            id="product-stock"
             type="number"
             step="1"
             placeholder="45"
             {...register("stock", {
-              required: "Quantity is required",
+              required: "Stock quantity is required",
               valueAsNumber: true,
               min: {
                 value: 0,
-                message: "Quantity cannot be negative",
+                message: "Stock cannot be negative",
               },
               validate: (value) =>
                 Number.isInteger(value) ||
-                "Quantity must be a whole number",
+                "Stock must be a whole number",
             })}
             className="w-full rounded-lg border border-gray-200 p-3 outline-none transition focus:border-[#8FE34D]"
           />
@@ -219,7 +233,7 @@ function ProductForm({ onAdd, onCancel, initialData }) {
           type="submit"
           className="rounded-lg bg-[#8FE34D] px-5 py-3 font-semibold text-[#1F2926] transition hover:bg-[#7CD63A]"
         >
-          {initialData ? "Save Changes" : "Add Food"}
+          {initialData ? "Save Changes" : "Add Product"}
         </button>
 
         <button
